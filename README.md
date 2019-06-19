@@ -1,11 +1,14 @@
 # QiCycle Button
 
-For the DigisSpark - ATTiny 85
+For the DigisSpark - ATTiny85
 
 ## Warning:
 * This version is untested!
 * Check your local regulations before using this.
 * Use at own risk
+
+## DigiSpark - ATTiny85
+![](digispark.png)
 
 ## Button
 
