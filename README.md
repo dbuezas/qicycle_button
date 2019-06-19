@@ -1,4 +1,4 @@
-# qicycle_button
+# QiCycle Button
 
 For the DigisSpark - ATTiny 85
 
@@ -18,7 +18,7 @@ For the DigisSpark - ATTiny 85
 * GND   -> (-) 
 * PIN 2 -> (data) 
 
-![](mburgas_diagram.jpeg)
+![Thanks @mBurgas for the diagram!](pinout_diagram.png)
 
 ## Recomended
 
