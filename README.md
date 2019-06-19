@@ -27,3 +27,4 @@ For the DigisSpark - ATTiny85
 
 * Remove the 5 second bootloader wait
 https://digistump.com/board/index.php/topic,2928.msg13641.html#msg13641
+* If you do this, to upload the code you have to ground P0 while plugging it to the USB (i.e press the bike button)
