@@ -8,7 +8,7 @@ For the DigisSpark - ATTiny85
 * Use at own risk
 
 ## DigiSpark - ATTiny85
-![](digispark.png)
+![](digispark-pinout.png)
 
 ## Button
 
