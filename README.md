@@ -17,7 +17,7 @@ For the DigisSpark - ATTiny85
 
 ## PAS:
 
-* VIN   -> (+) 
+* 5V    -> (+) 
 * GND   -> (-) 
 * PIN 2 -> (data) 
 
