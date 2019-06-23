@@ -1,7 +1,7 @@
 // All pins are capable of Digital output, though P5 is 3 V at HIGH instead of 5 V
 //    pinMode(0, OUTPUT); //0 is P0, 1 is P1, 2 is P2, etc. - unlike the analog inputs, for digital outputs the pin number matches.
 
-#define DEBUG // this will flash the led
+//#define DEBUG // this will flash the led
 
 #include "./EEPROM/EEPROM.h"
 
@@ -9,14 +9,14 @@
 #define LED_PIN 1
 #define THROTTLE_PIN 2
 
-#define DBL_CLICK_MS 400
+#define DBL_CLICK_MS 300
 #define CLICK_MS 200
 
-#define ON_TIME_MS 1000
-#define OFF_TIME_MS 50
+#define ON_TIME_MS 4500
+#define OFF_TIME_MS 20
 
 #define KILL_CLICKS 5
-#define CRUISE_CLICKS 3
+#define CRUISE_CLICKS 2
 
 #define KILL_SWITCH_EEPROM_ADDR 1
 
@@ -27,7 +27,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(THROTTLE_PIN, OUTPUT); 
   pinMode(BUTTON_PIN, INPUT);
-  digitalWrite(BUTTON_PIN, HIGH); // pull UP P0
+  digitalWrite(BUTTON_PIN, true); // pull UP P0
   toggleMotor(false);
   blink(5);
   killSwitch = EEPROM.read(KILL_SWITCH_EEPROM_ADDR);
@@ -36,6 +36,7 @@ void setup() {
 bool lastMotorIsOn = true;
 void toggleMotor(bool isOn) {
   if (isOn != lastMotorIsOn) {
+      lastMotorIsOn = isOn;
     #ifdef DEBUG
       digitalWrite(LED_PIN, isOn);
     #endif
@@ -46,9 +47,9 @@ void toggleMotor(bool isOn) {
 void blink(int times) {
   #ifdef DEBUG
     for (int i = 0; i< times; i++) {
-      digitalWrite(LED_PIN, HIGH);
+      digitalWrite(LED_PIN, true);
       delay(50);
-      digitalWrite(LED_PIN, LOW);
+      digitalWrite(LED_PIN, false);
       delay(50);
     }
   #endif
@@ -61,13 +62,13 @@ bool lastBtnSeemsDown = false;
 bool getIsBtnDownDebounced() {
   // non-blocking debounce, important to keep good timings
   bool btnSeemsDown = !digitalRead(BUTTON_PIN); 
-  if (btnSeemsDown) { // false means button is pressed
+  if (btnSeemsDown) {
     lastBtnSeemsDownMs = millis();
   } else {
     lastBtnSeemsUpMs = millis();
   }
   long deltaMs = abs(lastBtnSeemsDownMs - lastBtnSeemsUpMs);
-  if (deltaMs > 25) {
+  if (deltaMs > 10) {
     // no changes for 25ms, reading is confirmed.
     lastBtnSeemsDown = btnSeemsDown;
   };
@@ -82,7 +83,6 @@ int clickCount = 0;
 void loop() {
   long nowMs = millis();
   bool isBtnDown = getIsBtnDownDebounced();    
-  if (wasBtnDown != isBtnDown) lastBtnToggleMs = nowMs;
   
   if (isBtnDown) {
     isCruising = false;
@@ -96,21 +96,24 @@ void loop() {
       long msSinceLastClick = nowMs - lastClickMs;
       bool canConfirmOldClicks = msSinceLastClick > DBL_CLICK_MS;
   
-      if (canConfirmOldClicks){
+      if (canConfirmOldClicks && clickCount > 0){
         if (clickCount == KILL_CLICKS) {
           killSwitch = !killSwitch;
-          blink(killSwitch ? 2 : 4);
-          EEPROM.write(KILL_SWITCH_EEPROM_ADDR, killSwitch ? 0 : 1);
+          blink(killSwitch ? 2 : 5);
+          EEPROM.write(KILL_SWITCH_EEPROM_ADDR, killSwitch);
         }
-        if (clickCount == CRUISE_CLICKS) isCruising = true;
+        if (clickCount == CRUISE_CLICKS) {
+          isCruising = true;
+        }
         clickCount = 0;
       }
     }
   }
+  if (wasBtnDown != isBtnDown) lastBtnToggleMs = nowMs;
 
   wasBtnDown = isBtnDown;
 
-  bool shouldPause = (nowMs % ON_TIME_MS) < OFF_TIME_MS;
+  bool shouldPause = ((nowMs -lastBtnToggleMs) % ON_TIME_MS) < OFF_TIME_MS;
   bool wantsToAccelerate = isBtnDown || isCruising;
   
   toggleMotor(!killSwitch && wantsToAccelerate && !shouldPause);    
